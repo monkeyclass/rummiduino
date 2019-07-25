@@ -36,6 +36,7 @@ void setup() {
 }
 
 void loop() {
+    unsigned long currentMillis = millis();
     // read the state of the pushbutton value:
     start_buttonState = digitalRead(start_button_pin);
     pause_buttonState = digitalRead(pause_button_pin);
@@ -59,13 +60,12 @@ void loop() {
                 
         }
     }
-    delay(50);
+
     if (stop_buttonState != stop_buttonStatePrev) {
         if (stop_buttonState == HIGH){
             // button being pressed down
             Serial.println("stop!");
             start_pressMillis = 0;
-            Serial.println(start_pressMillis);
             digitalWrite(red_light_pin, LOW);
             digitalWrite(yellow_light_pin, LOW);
             digitalWrite(green_light_pin, LOW);
@@ -75,56 +75,82 @@ void loop() {
                 
         }
     }
-    delay(50);
+
+    if (pause_buttonState != pause_buttonStatePrev &&
+        start_pressMillis > 0 &&
+        currentMillis - start_pressMillis <= blinkPeriod) {
+            unsigned long pause_startMillis = millis();
+            unsigned long pause_stopMillis = 0;
+            if(pause_buttonState == HIGH) {
+                unsigned int pauseExit = 0;
+                delay(50);
+                while (pauseExit == 0) {
+                    start_buttonState = digitalRead(start_button_pin);
+                    if (start_buttonState == HIGH) {
+                        pauseExit = 1;
+                        pause_stopMillis = millis();
+                        unsigned long pause_Duration = pause_stopMillis - pause_startMillis;
+                        Serial.print("Pause duration: ");
+                        Serial.println(pause_Duration);
+                        start_pressMillis+=pause_Duration;
+                    }
+                    delay(50);
+                }
+            } else {
+
+            }
+        }
     start_buttonStatePrev = start_buttonState;
-    unsigned long currentMillis = millis();
-                if (currentMillis - previousMillis >= interval &&
-                    start_pressMillis > 0) {
-                    if (currentMillis - start_pressMillis <= blinkPeriod) {
-                        // prints time to console
-                        Serial.print("timer: ");
-                        Serial.println(currentMillis-start_pressMillis);
-                        // save the last time you blinked the LED
-                        previousMillis = currentMillis;
-                        // if the LED is off turn it on and vice-versa:
-                        if (ledState == LOW) {
-                            ledState = HIGH;
-                        } else {
-                            ledState = LOW;
-                        }
-                        // set the LED with the ledState of the variable:
-                        if (currentMillis - start_pressMillis <= blinkPeriod / 3) {
-                            digitalWrite(green_light_pin, ledState);
-                        } else if (currentMillis - start_pressMillis <= blinkPeriod / 3 * 2)
-                        {
-                            digitalWrite(yellow_light_pin, ledState);
-                            digitalWrite(green_light_pin, HIGH);
-                        } else if (currentMillis - start_pressMillis <= blinkPeriod) {
-                            digitalWrite(red_light_pin, ledState);
-                            digitalWrite(yellow_light_pin, HIGH);
-                        }
-                    } else if (currentMillis - start_pressMillis <= blinkPeriod + 5000 
-                                   && currentMillis - start_pressMillis >= blinkPeriod) {
-                                       previousMillis = currentMillis;
-                                       if (outputTone == false) {
-                                           tone(buzzer_pin,buzzerFreq);
-                                           digitalWrite(red_light_pin, HIGH);
-                                           digitalWrite(yellow_light_pin, HIGH);
-                                           digitalWrite(green_light_pin, HIGH);
-                                           outputTone = true;
-                                       } else {
-                                           noTone(buzzer_pin);
-                                           digitalWrite(red_light_pin, LOW);
-                                           digitalWrite(yellow_light_pin, LOW);
-                                           digitalWrite(green_light_pin, LOW);
-                                           outputTone = false;
-                                       }                                     
-                                   } else {
-                                       digitalWrite(red_light_pin, LOW);
-                                       digitalWrite(yellow_light_pin, LOW);
-                                       digitalWrite(green_light_pin, LOW);
-                                       noTone(buzzer_pin);
-                                       start_pressMillis = 0;
-                                   }
+    pause_buttonStatePrev = pause_buttonState;
+    stop_buttonStatePrev = stop_buttonState;
+    delay(50);
+    if (currentMillis - previousMillis >= interval &&
+        start_pressMillis > 0) {
+            if (currentMillis - start_pressMillis <= blinkPeriod) {
+                // prints time to console
+                Serial.print("timer: ");
+                Serial.println(currentMillis-start_pressMillis);
+                // save the last time you blinked the LED
+                previousMillis = currentMillis;
+                // if the LED is off turn it on and vice-versa:
+                if (ledState == LOW) {
+                    ledState = HIGH;
+                } else {
+                    ledState = LOW;
+                }
+                // set the LED with the ledState of the variable:
+                if (currentMillis - start_pressMillis <= blinkPeriod / 3) {
+                    digitalWrite(green_light_pin, ledState);
+                } else if (currentMillis - start_pressMillis <= blinkPeriod / 3 * 2)
+                {
+                    digitalWrite(yellow_light_pin, ledState);
+                    digitalWrite(green_light_pin, HIGH);
+                } else if (currentMillis - start_pressMillis <= blinkPeriod) {
+                    digitalWrite(red_light_pin, ledState);
+                    digitalWrite(yellow_light_pin, HIGH);
+                }
+            } else if (currentMillis - start_pressMillis <= blinkPeriod + 5000 && 
+                       currentMillis - start_pressMillis >= blinkPeriod) {
+                           previousMillis = currentMillis;
+                           if (outputTone == false) {
+                               tone(buzzer_pin,buzzerFreq);
+                               digitalWrite(red_light_pin, HIGH);
+                               digitalWrite(yellow_light_pin, HIGH);
+                               digitalWrite(green_light_pin, HIGH);
+                               outputTone = true;
+                               } else {
+                                   noTone(buzzer_pin);
+                                   digitalWrite(red_light_pin, LOW);
+                                   digitalWrite(yellow_light_pin, LOW);
+                                   digitalWrite(green_light_pin, LOW);
+                                   outputTone = false;
+                               }    
+                       } else {
+                            digitalWrite(red_light_pin, LOW);
+                            digitalWrite(yellow_light_pin, LOW);
+                            digitalWrite(green_light_pin, LOW);
+                            noTone(buzzer_pin);
+                            start_pressMillis = 0;
+                       }
                 }
 }
