@@ -50,46 +50,11 @@ void loop() {
 
   pauseButton();
 
-  start_buttonStatePrev = start_buttonState;
-  pause_buttonStatePrev = pause_buttonState;
-  stop_buttonStatePrev = stop_buttonState;
+  setButtonState();
+
   delay(50);
-  if (currentMillis - previousMillis >= interval &&
-    start_pressMillis > 0) {
-    if (currentMillis - start_pressMillis <= blinkPeriod) {
-      // save the last time you blinked the LED
-      previousMillis = currentMillis;
-      // if the LED is off turn it on and vice-versa:
-      if (ledState == LOW) {
-        ledState = HIGH;
-      } else {
-        ledState = LOW;
-      }
-      // set the LED with the ledState of the variable:
-      if (currentMillis - start_pressMillis <= blinkPeriod / 3) {
-        digitalWrite(green_light_pin, ledState);
-      } else if (currentMillis - start_pressMillis <= blinkPeriod / 3 * 2) {
-        digitalWrite(yellow_light_pin, ledState);
-        digitalWrite(green_light_pin, HIGH);
-      } else if (currentMillis - start_pressMillis <= blinkPeriod) {
-        digitalWrite(red_light_pin, ledState);
-        digitalWrite(yellow_light_pin, HIGH);
-      }
-    } else if (currentMillis - start_pressMillis <= blinkPeriod + beepPeriod &&
-      currentMillis - start_pressMillis >= blinkPeriod) {
-      previousMillis = currentMillis;
-      if (outputTone == false) {
-        ledSoundAll(1);
-        outputTone = true;
-      } else {
-        ledSoundAll(0);
-        outputTone = false;
-      }
-    } else {
-      ledSoundAll(0);
-      start_pressMillis = 0;
-    }
-  }
+
+  countdown();
 }
 
 void startButton() {
@@ -141,6 +106,11 @@ void pauseButton() {
   }
 }
 
+void setButtonState() {
+  start_buttonStatePrev = start_buttonState;
+  pause_buttonStatePrev = pause_buttonState;
+  stop_buttonStatePrev = stop_buttonState;
+}
 void ledSoundAll(int state) {
   digitalWrite(red_light_pin, state);
   digitalWrite(yellow_light_pin, state);
@@ -149,5 +119,44 @@ void ledSoundAll(int state) {
     tone(buzzer_pin, buzzerFreq);
   } else {
     noTone(buzzer_pin);
+  }
+}
+
+void countdown() {
+  if (currentMillis - previousMillis >= interval &&
+    start_pressMillis > 0) {
+    if (currentMillis - start_pressMillis <= blinkPeriod) {
+      // save the last time you blinked the LED
+      previousMillis = currentMillis;
+      // if the LED is off turn it on and vice-versa:
+      if (ledState == LOW) {
+        ledState = HIGH;
+      } else {
+        ledState = LOW;
+      }
+      // set the LED with the ledState of the variable:
+      if (currentMillis - start_pressMillis <= blinkPeriod / 3) {
+        digitalWrite(green_light_pin, ledState);
+      } else if (currentMillis - start_pressMillis <= blinkPeriod / 3 * 2) {
+        digitalWrite(yellow_light_pin, ledState);
+        digitalWrite(green_light_pin, HIGH);
+      } else if (currentMillis - start_pressMillis <= blinkPeriod) {
+        digitalWrite(red_light_pin, ledState);
+        digitalWrite(yellow_light_pin, HIGH);
+      }
+    } else if (currentMillis - start_pressMillis <= blinkPeriod + beepPeriod &&
+      currentMillis - start_pressMillis >= blinkPeriod) {
+      previousMillis = currentMillis;
+      if (outputTone == false) {
+        ledSoundAll(1);
+        outputTone = true;
+      } else {
+        ledSoundAll(0);
+        outputTone = false;
+      }
+    } else {
+      ledSoundAll(0);
+      start_pressMillis = 0;
+    }
   }
 }
