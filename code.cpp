@@ -22,7 +22,7 @@ int stop_buttonStatePrev = LOW;
 boolean outputTone = false;
 
 unsigned long previousMillis = 0; // will store last time LED was updated
-unsigned long start_pressMillis = 0;
+unsigned long start_pressMillis = 0; // when the start button was last pressed - used for pause stop
 
 void setup() {
   // set the digital pin as output:
@@ -32,7 +32,6 @@ void setup() {
   pinMode(start_button_pin, INPUT);
   pinMode(pause_button_pin, INPUT);
   pinMode(stop_button_pin, INPUT);
-  Serial.begin(9600);
 }
 
 void loop() {
@@ -47,32 +46,24 @@ void loop() {
   if (start_buttonState != start_buttonStatePrev) {
     if (start_buttonState == HIGH) {
       // button being pressed down
-      Serial.println("high on");
       start_pressMillis = millis();
-      Serial.print("pressed time: ");
-      Serial.println(start_pressMillis);
       digitalWrite(red_light_pin, LOW);
       digitalWrite(yellow_light_pin, LOW);
       digitalWrite(green_light_pin, LOW);
       noTone(buzzer_pin);
     } else {
-      Serial.println("off");
-
     }
   }
 
   if (stop_buttonState != stop_buttonStatePrev) {
     if (stop_buttonState == HIGH) {
       // button being pressed down
-      Serial.println("stop!");
       start_pressMillis = 0;
       digitalWrite(red_light_pin, LOW);
       digitalWrite(yellow_light_pin, LOW);
       digitalWrite(green_light_pin, LOW);
       noTone(buzzer_pin);
     } else {
-      Serial.println("stop released");
-
     }
   }
 
@@ -90,8 +81,6 @@ void loop() {
           pauseExit = 1;
           pause_stopMillis = millis();
           unsigned long pause_Duration = pause_stopMillis - pause_startMillis;
-          Serial.print("Pause duration: ");
-          Serial.println(pause_Duration);
           start_pressMillis += pause_Duration;
         }
         delay(50);
@@ -107,9 +96,6 @@ void loop() {
   if (currentMillis - previousMillis >= interval &&
     start_pressMillis > 0) {
     if (currentMillis - start_pressMillis <= blinkPeriod) {
-      // prints time to console
-      Serial.print("timer: ");
-      Serial.println(currentMillis - start_pressMillis);
       // save the last time you blinked the LED
       previousMillis = currentMillis;
       // if the LED is off turn it on and vice-versa:
@@ -128,7 +114,7 @@ void loop() {
         digitalWrite(red_light_pin, ledState);
         digitalWrite(yellow_light_pin, HIGH);
       }
-    } else if (currentMillis - start_pressMillis <= blinkPeriod + 5000 &&
+    } else if (currentMillis - start_pressMillis <= blinkPeriod + beepPeriod &&
       currentMillis - start_pressMillis >= blinkPeriod) {
       previousMillis = currentMillis;
       if (outputTone == false) {
