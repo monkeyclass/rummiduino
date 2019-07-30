@@ -6,8 +6,8 @@ const int start_button_pin = 7;
 const int pause_button_pin = 6;
 const int stop_button_pin = 5;
 const int buzzer_pin = 8;
+const long iniBlinkPeriod = 60000;
 const long interval = 500; // interval at which to blink (milliseconds)
-const long blinkPeriod = 9000; // the time in ms each led should blink
 const long beepPeriod = 5000; // the time in ms that beeper will continue
 const int buzzerFreq = 1000; // the frequenzy of the buzzer
 
@@ -20,10 +20,11 @@ int pause_buttonStatePrev = LOW;
 int stop_buttonState = LOW;
 int stop_buttonStatePrev = LOW;
 boolean outputTone = false;
+long blinkPeriod = iniBlinkPeriod; // the time in ms each led should blink
 
 unsigned long previousMillis = 0; // will store last time LED was updated
 unsigned long start_pressMillis = 0; // when the start button was last pressed - used for pause stop
-unsigned long currentMillis = 0;
+unsigned long currentMillis = 0; // will store the current time for each time the loop begins
 
 void setup() {
   // set the digital pin as output:
@@ -38,12 +39,13 @@ void setup() {
 void loop() {
   currentMillis = millis();
   // read the state of the pushbutton value:
-  start_buttonState = digitalRead(start_button_pin);
-  pause_buttonState = digitalRead(pause_button_pin);
-  stop_buttonState = digitalRead(stop_button_pin);
+  readPinStates(true, true, true);
   // check to see if it's time to blink the LED; that is, if the difference
   // between the current time and last time you blinked the LED is bigger than
   // the interval at which you want to blink the LED.
+
+  setTimeMode(); // enter mode to set the countdown time
+
   startButton();
 
   stopButton();
@@ -51,10 +53,61 @@ void loop() {
   pauseButton();
 
   setButtonState();
-
-  delay(50);
+  delay(50); // delay to make sure press is registred properly
 
   countdown();
+}
+
+void readPinStates(boolean readStart, boolean readPause, boolean readStop) {
+  if (readStart) {
+    start_buttonState = digitalRead(start_button_pin);
+  }
+  if (readPause) {
+    pause_buttonState = digitalRead(pause_button_pin);
+  }
+  if (readStop) {
+    stop_buttonState = digitalRead(stop_button_pin);
+  }
+}
+
+void setTimeMode() {
+  if (pause_buttonState != pause_buttonStatePrev && stop_buttonState != stop_buttonStatePrev) {
+    boolean setMode = false;
+    if (stop_buttonState == HIGH && pause_buttonState == HIGH) {
+      setMode = true;
+      ledSoundAll(1, 1, 1, 1); // change to use millis potentially
+      delay(1000);
+      ledSoundAll(0, 0, 0, 0);
+    }
+    while (setMode == true) {
+      readPinStates(true, true, true);
+      if (start_buttonState == HIGH) {
+        setMode = false;
+      } else {
+        if (blinkPeriod < iniBlinkPeriod) {
+          ledSoundAll(1,0,0,0);
+          if (pause_buttonState == HIGH) {
+            blinkPeriod = iniBlinkPeriod;
+          }
+          delay(200);
+        } else if (blinkPeriod == iniBlinkPeriod) {
+          ledSoundAll(1,1,0,0);
+          if (pause_buttonState == HIGH) {
+            blinkPeriod*=1.5;
+          } else if (stop_buttonState == HIGH) {
+            blinkPeriod/=2;
+          }
+          delay(200);
+        } else {
+          ledSoundAll(1,1,1,0);
+          if (stop_buttonState == HIGH) {
+            blinkPeriod=iniBlinkPeriod;
+          }
+          delay(200);
+        }
+      }
+    }
+  }
 }
 
 void startButton() {
@@ -62,7 +115,7 @@ void startButton() {
     if (start_buttonState == HIGH) {
       // button being pressed down
       start_pressMillis = millis();
-      ledSoundAll(0);
+      ledSoundAll(0, 0, 0, 0);
     } else {
 
     }
@@ -74,7 +127,7 @@ void stopButton() {
     if (stop_buttonState == HIGH) {
       // button being pressed down
       start_pressMillis = 0;
-      ledSoundAll(0);
+      ledSoundAll(0, 0, 0, 0);
     } else {
 
     }
@@ -91,7 +144,7 @@ void pauseButton() {
       unsigned int pauseExit = 0;
       delay(50);
       while (pauseExit == 0) {
-        start_buttonState = digitalRead(start_button_pin);
+        readPinStates(true, false, false);
         if (start_buttonState == HIGH) {
           pauseExit = 1;
           pause_stopMillis = millis();
@@ -111,11 +164,11 @@ void setButtonState() {
   pause_buttonStatePrev = pause_buttonState;
   stop_buttonStatePrev = stop_buttonState;
 }
-void ledSoundAll(int state) {
-  digitalWrite(red_light_pin, state);
-  digitalWrite(yellow_light_pin, state);
-  digitalWrite(green_light_pin, state);
-  if (state == 1) {
+void ledSoundAll(int green_state, int yellow_state, int red_state, int buzzerState) {
+  digitalWrite(red_light_pin, red_state);
+  digitalWrite(yellow_light_pin, yellow_state);
+  digitalWrite(green_light_pin, green_state);
+  if (buzzerState == 1) {
     tone(buzzer_pin, buzzerFreq);
   } else {
     noTone(buzzer_pin);
@@ -148,14 +201,14 @@ void countdown() {
       currentMillis - start_pressMillis >= blinkPeriod) {
       previousMillis = currentMillis;
       if (outputTone == false) {
-        ledSoundAll(1);
+        ledSoundAll(1, 1, 1, 1);
         outputTone = true;
       } else {
-        ledSoundAll(0);
+        ledSoundAll(0, 0, 0, 0);
         outputTone = false;
       }
     } else {
-      ledSoundAll(0);
+      ledSoundAll(0, 0, 0, 0);
       start_pressMillis = 0;
     }
   }
