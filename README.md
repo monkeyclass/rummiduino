@@ -10,9 +10,9 @@ The code enables the following functionality to the rummiduino:
 3. Button no. 3 (stop button) stop and resets the timer.
 4. Pressing start button while the timer is running will restart the timer.
 5. Pressing pause and stop button simultaneously enables setting the countdown timer.
-  * each lit LED indicates 30 seconds, e.g. red + yellow = 1 minute.
-  * More or less time is controlled with pause and stop buttons.
-  * Exit and set time by pressing start button.
+    * each lit LED indicates 30 seconds, e.g. red + yellow = 1 minute.
+    * More or less time is controlled with pause and stop buttons.
+    * Exit and set time by pressing start button.
 
 
 
