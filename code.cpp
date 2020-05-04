@@ -34,6 +34,9 @@ void setup() {
   pinMode(start_button_pin, INPUT);
   pinMode(pause_button_pin, INPUT);
   pinMode(stop_button_pin, INPUT);
+  digitalWrite(start_button_pin, HIGH);
+  digitalWrite(pause_button_pin, HIGH);
+  digitalWrite(stop_button_pin, HIGH);
 }
 
 void loop() {
@@ -73,7 +76,7 @@ void readPinStates(boolean readStart, boolean readPause, boolean readStop) {
 void setTimeMode() {
   if (pause_buttonState != pause_buttonStatePrev && stop_buttonState != stop_buttonStatePrev) {
     boolean setMode = false;
-    if (stop_buttonState == HIGH && pause_buttonState == HIGH) {
+    if (stop_buttonState == LOW && pause_buttonState == LOW) {
       setMode = true;
       ledSoundAll(1, 1, 1, 1); // change to use millis potentially
       delay(1000);
@@ -81,26 +84,26 @@ void setTimeMode() {
     }
     while (setMode == true) {
       readPinStates(true, true, true);
-      if (start_buttonState == HIGH) {
+      if (start_buttonState == LOW) {
         setMode = false;
       } else {
         if (blinkPeriod < iniBlinkPeriod) {
           ledSoundAll(1,0,0,0);
-          if (pause_buttonState == HIGH) {
+          if (pause_buttonState == LOW) {
             blinkPeriod = iniBlinkPeriod;
           }
           delay(200);
         } else if (blinkPeriod == iniBlinkPeriod) {
           ledSoundAll(1,1,0,0);
-          if (pause_buttonState == HIGH) {
+          if (pause_buttonState == LOW) {
             blinkPeriod*=1.5;
-          } else if (stop_buttonState == HIGH) {
+          } else if (stop_buttonState == LOW) {
             blinkPeriod/=2;
           }
           delay(200);
         } else {
           ledSoundAll(1,1,1,0);
-          if (stop_buttonState == HIGH) {
+          if (stop_buttonState == LOW) {
             blinkPeriod=iniBlinkPeriod;
           }
           delay(200);
@@ -112,7 +115,7 @@ void setTimeMode() {
 
 void startButton() {
   if (start_buttonState != start_buttonStatePrev) {
-    if (start_buttonState == HIGH) {
+    if (start_buttonState == LOW) {
       // button being pressed down
       start_pressMillis = millis();
       ledSoundAll(0, 0, 0, 0);
@@ -124,7 +127,7 @@ void startButton() {
 
 void stopButton() {
   if (stop_buttonState != stop_buttonStatePrev) {
-    if (stop_buttonState == HIGH) {
+    if (stop_buttonState == LOW) {
       // button being pressed down
       start_pressMillis = 0;
       ledSoundAll(0, 0, 0, 0);
@@ -140,12 +143,12 @@ void pauseButton() {
     currentMillis - start_pressMillis <= blinkPeriod) {
     unsigned long pause_startMillis = millis();
     unsigned long pause_stopMillis = 0;
-    if (pause_buttonState == HIGH) {
+    if (pause_buttonState == LOW) {
       unsigned int pauseExit = 0;
       delay(50);
       while (pauseExit == 0) {
         readPinStates(true, false, false);
-        if (start_buttonState == HIGH) {
+        if (start_buttonState == LOW) {
           pauseExit = 1;
           pause_stopMillis = millis();
           unsigned long pause_Duration = pause_stopMillis - pause_startMillis;
