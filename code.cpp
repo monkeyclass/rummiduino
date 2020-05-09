@@ -1,11 +1,11 @@
 // constants won't change. Used here to set a pin number:
-const int red_light_pin = 11;
-const int yellow_light_pin = 10;
-const int green_light_pin = 9;
-const int start_button_pin = 7;
-const int pause_button_pin = 6;
-const int stop_button_pin = 5;
-const int buzzer_pin = 8;
+const int red_light_pin = 12;
+const int yellow_light_pin = 11;
+const int green_light_pin = 10;
+const int start_button_pin = 6;
+const int pause_button_pin = 5;
+const int stop_button_pin = 4;
+const int buzzer_pin = 9;
 const long iniBlinkPeriod = 60000;
 const long interval = 500; // interval at which to blink (milliseconds)
 const long beepPeriod = 5000; // the time in ms that beeper will continue
